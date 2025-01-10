@@ -4,14 +4,15 @@ import asyncio
 import importlib
 from sys import argv
 
+
 from pyrogram import idle, Client, filters
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 from pyrogram.errors.exceptions.bad_request_400 import AccessTokenExpired, AccessTokenInvalid
 
-from .utils.database import get_assistant
-from BrandrdXMusic import app
-from BrandrdXMusic.misc import SUDOERS
-from BrandrdXMusic.utils.database import get_assistant, clonebotdb, ownerdb
+from JioSavaan.utils.database import get_assistant
+from JioSavaan import app
+from JioSavaan.misc import SUDOERS
+from JioSavaan.utils.database import get_assistant, clonebotdb, ownerdb
 from config import API_ID, API_HASH, LOGGER_ID
 from config import BANNED_USERS
 
@@ -50,7 +51,7 @@ async def hclone_txt(client, message):
                 api_id=API_ID,
                 api_hash=API_HASH,
                 bot_token=bot_token,
-                plugins=dict(root="BrandrdXMusic.cplugin")
+                plugins=dict(root="JioSavaan.cplugin")
             )
             await ai.start()
             bot = await ai.get_me()
@@ -170,7 +171,7 @@ async def restart_bots():
                 API_ID,
                 API_HASH,
                 bot_token=bot_token,
-                plugins=dict(root="BrandrdXMusic.cplugin"),
+                plugins=dict(root="JioSavaan.cplugin"),
             )
             await ai.start()
             bot = await ai.get_me()
