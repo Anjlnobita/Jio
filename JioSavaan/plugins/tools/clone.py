@@ -40,6 +40,49 @@ async def request_token(client, callback_query: CallbackQuery):
     await callback_query.message.edit_text("Please send me the bot token.")
 
 
+@app.on_message(filters.text & filters.private)
+async def receive_token(client, message):
+    user_id = message.from_user.id
+    
+    if user_id in awaiting_token and awaiting_token[user_id]:  # Check if the user is in the waiting state
+        bot_token = message.text.strip()
+        mi = await message.reply_text("Processing the bot token, please wait...")
+        
+        try:
+            ai = Client(
+                session_name=f"bot_{bot_token[:9]}",
+                api_id=API_ID,
+                api_hash=API_HASH,
+                bot_token=bot_token,
+                plugins=dict(root="JioSavaan.cplugin")
+            )
+            await ai.start()
+            bot = await ai.get_me()
+
+            # Bot Token is valid
+            await mi.edit_text(f"Bot @{bot.username} has been successfully cloned and started ✅.")
+            await app.send_message(message.chat.id, f"Your bot @{bot.username} has been successfully cloned and started!")
+            
+            # Save the bot details in the database
+            details = {
+                "bot_id": bot.id,
+                "is_bot": True,
+                "user_id": user_id,
+                "name": bot.first_name,
+                "token": bot_token,
+                "username": bot.username,
+            }
+            clonebotdb.insert_one(details)
+            CLONES.add(bot.id)
+            
+        except (AccessTokenExpired, AccessTokenInvalid) as e:
+            await mi.edit_text(f"Invalid bot token provided: {e}")
+            logging.exception(f"Invalid bot token: {e}")
+        except Exception as e:
+            logging.exception("An error occurred while processing the bot token.")
+            await mi.edit_text(f"An error occurred: {str(e)}")
+
+
   
 
 @app.on_callback_query(filters.regex("list_cloned_bots"))
