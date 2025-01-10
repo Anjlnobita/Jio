@@ -12,6 +12,8 @@ from JioSavaan.plugins import ALL_MODULES
 from JioSavaan.utils.database import get_banned_users, get_gbanned
 from config import BANNED_USERS
 
+from JioSavaan.plugins.tools.clone import restart_bots
+
 
 async def init():
     if (
