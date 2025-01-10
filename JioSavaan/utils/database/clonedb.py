@@ -1,4 +1,4 @@
-from BrandrdXMusic.core.mongo import mongodb
+from JioSavaan.core.mongo import mongodb
 from typing import Dict, List, Union
 
 cloneownerdb = mongodb.nobita
