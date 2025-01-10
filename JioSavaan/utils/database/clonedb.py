@@ -2,7 +2,7 @@ from JioSavaan.core.mongo import mongodb
 from typing import Dict, List, Union
 
 cloneownerdb = mongodb.nobita
-clonebotdb = pymongodb.clonebotdb
+clonebotdb = mongodb.clonebotdb
 clonebotnamedb = mongodb.clonebotnamedb
 ownerdb = mongodb.nobi
 
