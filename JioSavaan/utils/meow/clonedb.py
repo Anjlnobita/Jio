@@ -1,4 +1,4 @@
-from JioSavaan.core.mongo import mongodb, pymongodb
+from JioSavaan.core.mongo import mongodb
 from typing import Dict, List, Union
 
 cloneownerdb = mongodb.nobita
