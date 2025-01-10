@@ -31,8 +31,8 @@ def stream_markup_timer(_, chat_id, played, dur):
     played_sec = time_to_seconds(played)
     duration_sec = time_to_seconds(dur)
     percentage = (played_sec / duration_sec) * 100
-    anon = math.floor(percentage)
-    if 0 < anon <= 10:
+    umm = math.floor(percentage)
+    if 0 < umm <= 10:
         bar = "❖◈◈◈◈◈◈◈◈◈"
     elif 10 < umm < 20:
         bar = "◈❖◈◈◈◈◈◈◈◈"
@@ -52,18 +52,13 @@ def stream_markup_timer(_, chat_id, played, dur):
         bar = "◈◈◈◈◈◈◈◈❖◈"
     else:
         bar = "◈◈◈◈◈◈◈◈◈❖"
-
-##bar of wynk---------------------------------------
-    
-    
-    buttons = [
-  
-        [
-            InlineKeyboardButton(
-                text=f"{bar}",
-                callback_data="GetTimer",
-            )
-        ],
+    buttons = [   
+            [
+                   InlineKeyboardButton(
+                text=f"{played} {bar} {dur}",
+                callback_data="GetTimer"
+                )
+         ],
          [
             InlineKeyboardButton(text="ᴘᴀᴜsᴇ", callback_data=f"ADMIN Pause|{chat_id}"),
             InlineKeyboardButton(text="ʀᴇsᴜᴍᴇ", callback_data=f"ADMIN Resume|{chat_id}"),
@@ -73,8 +68,8 @@ def stream_markup_timer(_, chat_id, played, dur):
             InlineKeyboardButton(text="sᴛᴏᴘ", callback_data=f"ADMIN Stop|{chat_id}"),
             InlineKeyboardButton(text="ʀᴇᴘʟᴀʏ", callback_data=f"ADMIN Replay|{chat_id}"),
         ],
-            InlineKeyboardButton(text=_["CLOSE_BUTTON"], callback_data="close"), 
-        ]
+        [InlineKeyboardButton(text=_["CLOSE_BUTTON"], callback_data="close")],
+    ]
     return buttons
 
 
