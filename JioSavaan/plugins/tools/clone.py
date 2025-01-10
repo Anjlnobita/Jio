@@ -12,7 +12,8 @@ from pyrogram.errors.exceptions.bad_request_400 import AccessTokenExpired, Acces
 from JioSavaan.utils.database import get_assistant
 from JioSavaan import app
 from JioSavaan.misc import SUDOERS
-from JioSavaan.utils.database import get_assistant, clonebotdb, ownerdb
+
+from JioSavaan.utils import clonebotdb, ownerdb
 from config import API_ID, API_HASH, LOGGER_ID
 from config import BANNED_USERS
 
