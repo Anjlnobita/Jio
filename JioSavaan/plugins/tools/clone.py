@@ -40,11 +40,9 @@ async def request_token(client, callback_query: CallbackQuery):
     await callback_query.message.edit_text("Please send me the bot token.")
 
 
-@app.on_message(filters.command(["hclone"]) & filters.private & ~BANNED_USERS)
-async def hclone_txt(client, message):
-    userbot = await get_assistant(message.chat.id)
-    if len(message.command) > 1:
-        bot_token = message.text.split("/clone", 1)[1].strip()
+@app.on_message(filters.text & filters.private)
+async def receive_token(client, message):
+    bot_token = message.text.strip()
         mi = await message.reply_text("Processing the bot token, please wait...")
         try:
             ai = Client(
