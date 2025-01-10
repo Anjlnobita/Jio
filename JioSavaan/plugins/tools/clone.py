@@ -40,60 +40,7 @@ async def request_token(client, callback_query: CallbackQuery):
     await callback_query.message.edit_text("Please send me the bot token.")
 
 
-@app.on_message(filters.text & filters.private)
-async def receive_token(client, message):
-    bot_token = message.text.strip()
-        mi = await message.reply_text("Processing the bot token, please wait...")
-        try:
-            ai = Client(
-                session_name=bot_token,
-                api_id=API_ID,
-                api_hash=API_HASH,
-                bot_token=bot_token,
-                plugins=dict(root="JioSavaan.cplugin")
-            )
-            await ai.start()
-            bot = await ai.get_me()
-
-        except (AccessTokenExpired, AccessTokenInvalid):
-            await mi.edit_text("You have provided an invalid bot token. Please provide a valid bot token.")
-            return
-        except Exception as e:
-            await mi.edit_text(f"An error occurred: {str(e)}")
-            return
-
-        await mi.edit_text("Cloning process started. Please wait...")
-        try:
-            await app.send_message(LOGGER_ID, f"**#New_Clones**\n\n**Bot:- @{bot.username}**")
-            await userbot.send_message(bot.username, "/start")
-
-            details = {
-                "bot_id": bot.id,
-                "is_bot": True,
-                "user_id": message.from_user.id,
-                "name": bot.first_name,
-                "token": bot_token,
-                "username": bot.username,
-            }
-            clonebotdb.insert_one(details)
-            ownerdb.insert_one({"bot_id": bot.id, "owner_id": message.from_user.id, "original_bot": message.bot.id})
-            CLONES.add(bot.id)
-            await mi.edit_text(
-                f"Bot @{bot.username} has been successfully cloned and started ✅.",
-                reply_markup=InlineKeyboardMarkup(
-                    [
-                        [
-                            InlineKeyboardButton("Remove Clone", callback_data=f"remove_clone_{bot.id}"),InlineKeyboardButton("Manage Clones", callback_data=f"list_user_cloned_bots_{message.from_user.id}")
-                        ]
-                    ]
-                )
-            )
-            await client.send_message(message.from_user.id, f"Your bot @{bot.username} has been successfully cloned and started! ✅")
-        except BaseException as e:
-            logging.exception("Error while cloning bot.")
-            await mi.edit_text(f"⚠️ <b>ERROR:</b>\n\n<code>{e}</code>\n\n*Please forward this message to @nobi_bots for assistance.*")
-    else:
-        await message.reply_text("Invalid bot token format. Please provide a valid bot token from @BotFather.")
+  
 
 @app.on_callback_query(filters.regex("list_cloned_bots"))
 async def list_cloned_bots(client, callback_query: CallbackQuery):
