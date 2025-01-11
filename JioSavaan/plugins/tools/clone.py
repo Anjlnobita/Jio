@@ -3,44 +3,21 @@ import logging
 import asyncio
 import importlib
 from sys import argv
-
-
-from pyrogram import idle, Client, filters
-from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
-from pyrogram.errors.exceptions.bad_request_400 import AccessTokenExpired, AccessTokenInvalid
-
+from pyrogram import idle
+from pyrogram import Client, filters
+from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from pyrogram.errors.exceptions.bad_request_400 import (
+    AccessTokenExpired,
+    AccessTokenInvalid,
+)
 from JioSavaan.utils.database import get_assistant
+from config import API_ID, API_HASH
 from JioSavaan import app
 from JioSavaan.misc import SUDOERS
-
-from JioSavaan.utils import clonebotdb, ownerdb
-from config import API_ID, API_HASH, LOGGER_ID
-from config import BANNED_USERS
-
+from JioSavaan.utils import clonebotdb
+from config import LOGGER_ID
 
 CLONES = set()
-
-@app.on_message(filters.command(["clone"]) & filters.private & ~BANNED_USERS)
-async def clone_command(client, message):
-    await message.reply_text(
-        "Choose an option below:",
-        reply_markup=InlineKeyboardMarkup(
-            [
-                [
-                    InlineKeyboardButton("Clone", callback_data="provide_token"),
-                    InlineKeyboardButton("Cloned Bots", callback_data="list_cloned_bots"),
-                    InlineKeyboardButton("Remove Cloned Bot", callback_data="remove_cloned_bots")
-                ]
-            ]
-        )
-    )
-
-@app.on_callback_query(filters.regex("provide_token"))
-async def request_token(client, callback_query: CallbackQuery):
-    await callback_query.message.edit_text("Please send me the bot token.")
-
-
- 
 
 
 @app.on_message(filters.command("clone") & SUDOERS)
@@ -55,7 +32,7 @@ async def clone_txt(client, message):
                 API_ID,
                 API_HASH,
                 bot_token=bot_token,
-                plugins=dict(root="JioSavaan.cplugin"),
+                plugins=dict(root="RISHUMUSIC.cplugin"),
             )
             await ai.start()
             bot = await ai.get_me()
@@ -105,67 +82,44 @@ async def clone_txt(client, message):
             "**Give Bot Token After /clone Command From @Botfather.**"
         )
 
-@app.on_callback_query(filters.regex("list_cloned_bots"))
-async def list_cloned_bots(client, callback_query: CallbackQuery):
-    user_id = callback_query.from_user.id
-    cloned_bots = clonebotdb.find({"user_id": user_id})
-    cloned_bots_list = [bot for bot in cloned_bots]
-    if not cloned_bots_list:
-        await callback_query.message.edit_text("You haven't cloned any bots yet.")
-        return
 
-    text = "Your cloned bots:\n\n"
-    buttons = []
-
-    for bot in cloned_bots_list:
-        text += f"@{bot['username']}\n"
-        buttons.append([InlineKeyboardButton(f"Remove @{bot['username']}", callback_data=f"remove_clone_{bot['bot_id']}")])
-
-    if user_id in SUDOERS:
-        all_bots = clonebotdb.find()
-        admin_text = "\n\nAll cloned bots:\n\n"
-        admin_buttons = []
-
-        for bot in all_bots:
-            admin_text += f"@{bot['username']} (User ID: {bot['user_id']})\n"
-            admin_buttons.append([InlineKeyboardButton(f"Remove @{bot['username']}", callback_data=f"remove_clone_{bot['bot_id']}")])
-
-        text += admin_text
-        buttons.extend(admin_buttons)
-
-    await callback_query.message.edit_text(
-        text,
-        reply_markup=InlineKeyboardMarkup(buttons)
+@app.on_message(
+    filters.command(
+        [
+            "deletecloned",
+            "delcloned",
+            "delclone",
+            "deleteclone",
+            "removeclone",
+            "cancelclone",
+        ]
     )
+)
+async def delete_cloned_bot(client, message):
+    try:
+        if len(message.command) < 2:
+            await message.reply_text(
+                "**⚠️ Please provide the bot token after the command.**"
+            )
+            return
 
-@app.on_callback_query(filters.regex(r"remove_clone_\d+"))
-async def remove_clone(client, callback_query: CallbackQuery):
-    bot_id = int(callback_query.data.split("_")[2])
-    cloned_bot = clonebotdb.find_one({"bot_id": bot_id})
-    if cloned_bot:
-        clonebotdb.delete_one({"bot_id": bot_id})
-        ownerdb.delete_one({"bot_id": bot_id})
-        CLONES.remove(bot_id)
-        await callback_query.message.edit_text(f"Bot @{cloned_bot['username']} has been successfully removed.")
-        await client.send_message(cloned_bot['user_id'], f"Your bot @{cloned_bot['username']} has been successfully removed.")
-    else:
-        await callback_query.message.edit_text("Bot not found in the cloned list.")
+        bot_token = " ".join(message.command[1:])
+        await message.reply_text("Processing the bot token...")
 
-@app.on_callback_query(filters.regex(r"remove_all_clones_\d+"))
-async def remove_all_clones(client, callback_query: CallbackQuery):
-    user_id = int(callback_query.data.split("_")[3])
-    cloned_bots = clonebotdb.find({"user_id": user_id})
-    if not cloned_bots:
-        await callback_query.message.edit_text("No cloned bots found for this user.")
-        return
-
-    for bot in cloned_bots:
-        clonebotdb.delete_one({"bot_id": bot["bot_id"]})
-        ownerdb.delete_one({"bot_id": bot["bot_id"]})
-        CLONES.discard(bot["bot_id"])
-
-    await callback_query.message.edit_text("All your cloned bots have been successfully removed.")
-    await client.send_message(user_id, "All your cloned bots have been successfully removed.")
+        cloned_bot = clonebotdb.find_one({"token": bot_token})
+        if cloned_bot:
+            clonebotdb.delete_one({"token": bot_token})
+            CLONES.remove(cloned_bot["bot_id"])
+            await message.reply_text(
+                "**🤖 your cloned bot has been disconnected from my server ☠️\nClone by :- /clone**"
+            )
+        else:
+            await message.reply_text(
+                "**⚠️ The provided bot token is not in the cloned list.**"
+            )
+    except Exception as e:
+        await message.reply_text("An error occurred while deleting the cloned bot.")
+        logging.exception(e)
 
 
 async def restart_bots():
@@ -180,7 +134,7 @@ async def restart_bots():
                 API_ID,
                 API_HASH,
                 bot_token=bot_token,
-                plugins=dict(root="JioSavaan.cplugin"),
+                plugins=dict(root="RISHUMUSIC.cplugin"),
             )
             await ai.start()
             bot = await ai.get_me()
@@ -191,3 +145,27 @@ async def restart_bots():
                     pass
     except Exception as e:
         logging.exception("Error while restarting bots.")
+
+
+@app.on_message(filters.command("cloned") & SUDOERS)
+async def list_cloned_bots(client, message):
+    try:
+        cloned_bots = clonebotdb.find()
+        cloned_bots_list = await cloned_bots.to_list(length=None)
+
+        if not cloned_bots_list:
+            await message.reply_text("No bots have been cloned yet.")
+            return
+
+        total_clones = len(cloned_bots_list)
+        text = f"Total Cloned Bots: {total_clones}\n\n"
+
+        for bot in cloned_bots_list:
+            text += f"Bot ID: {bot['bot_id']}\n"
+            text += f"Bot Name: {bot['name']}\n"
+            text += f"Bot Username: @{bot['username']}\n\n"
+
+        await message.reply_text(text)
+    except Exception as e:
+        logging.exception(e)
+        await message.reply_text("An error occurred while listing cloned bots.")
